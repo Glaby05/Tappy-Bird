@@ -26,7 +26,18 @@ class Star(pygame.sprite.Sprite):
 
 class Life(pygame.sprite.Sprite):
     """Objects who move or are transformed in reaction to user activities."""
-    pass
+    def __init__(self):
+        super().__init__()
+
+        # self.image = pygame.Surface([20, 15])
+        self.image = pygame.Surface((100, 30))
+        self.image.fill((253, 234, 14))  # or set_colorkey()
+        self.rect = self.image.get_rect()
+        # self.rect.left = SET THE LOCATION ACCORDING TO THE WINDOW
+
+    def update(self):
+        """Decrease life by n every second. (by doing self.rect.x - n) """
+        pass
 
 
 class PowerUp(pygame.sprite.Sprite):
