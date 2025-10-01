@@ -6,6 +6,7 @@ screen_info = pygame.display.Info()
 SCREEN_WIDTH = screen_info.current_w
 SCREEN_HEIGHT = screen_info.current_h
 
+
 class Game:
     """ This class represents the Game. It contains all the game objects. """
     def __init__(self):
