@@ -1,4 +1,4 @@
-import pygame
+import pygame, Objects
 from pygame.time import get_ticks
 from pygame.mask import from_surface
 
@@ -28,9 +28,14 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
 
+    bg_image = pygame.image.load("assets/background.png").convert()
+    bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
     # Set the font for the start and game over screens
     font = pygame.font.Font(None, 32)
     big_font = pygame.font.Font(None, 48)
+
+    player = Objects.Player((100,200))
 
     running = True
     while running:
@@ -38,7 +43,9 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        screen.fill((255, 255, 255))
+        screen.blit(bg_image, (0,0))
+        player.update()
+        player.draw(screen)
         pygame.display.flip()
 
     pygame.quit()

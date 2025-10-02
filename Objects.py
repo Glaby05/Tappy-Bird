@@ -5,24 +5,16 @@ from pygame.mask import from_surface
 # appropriate scaling behaviour (e.g. another level, a boss enemy)
 # life decreases faster and player moves faster overtime
 
-def load_player_sheet(sheet, x, y, w, h):
-    """Extract a sprite from the sheet at (x, y) with size (w, h)."""
-    sprite = pygame.Surface((w, h), pygame.SRCALPHA)
-    sprite.blit(sheet, (0, 0), (x, y, w, h))
-    return sprite
-
-sheet = pygame.image.load("assets/Flap.png").convert_alpha()
-fall_img = load_player_sheet(sheet, 0, 0, 64, 64)
-jump_img = load_player_sheet(sheet, 64, 0, 64, 64)
-
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, image, startx, starty):
+    def __init__(self, pos, image=None):
         super().__init__()
+        if image:
+            self.image = pygame.image.load(image).convert_alpha()
+        else:
+            self.image = pygame.Surface((64, 64), pygame.SRCALPHA)
 
-        self.image = pygame.image.load(image).convert_alpha()
         self.rect = self.image.get_rect()
-
-        self.rect.center = [startx, starty]
+        self.rect.center = pos
 
     def update(self):
         pass
@@ -34,13 +26,26 @@ class Sprite(pygame.sprite.Sprite):
 class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
-    def __init__(self, startx, starty, index=0):
-        super().__init__(fall_img, startx, starty)
+    def __init__(self, pos):
+        super().__init__(pos, "assets/fall.png")
+
+        #Animation frames
+        self.fall = pygame.image.load("assets/fall.png").convert_alpha()
+        self.jump = pygame.image.load("assets/jump.png").convert_alpha()
+
+        self.rect = self.image.get_rect(topleft=pos)
+
+        self.state = "idle"
 
     def update(self):
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE]:
-            self.image = jump_img
+            self.state = "jump"
+            self.image = self.jump
+        else:
+            self.state = "idle"
+            self.image = self.fall
+
 
 
 class Wall(pygame.sprite.Sprite):
