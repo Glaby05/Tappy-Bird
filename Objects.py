@@ -30,6 +30,7 @@ class Sprite(pygame.sprite.Sprite):
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
+
 class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
@@ -45,7 +46,14 @@ class Player(Sprite):
 class Wall(pygame.sprite.Sprite):
     """objects that (dis-)appear in reaction to player activities.
     (if shot when player powered up)"""
-    pass
+    def __init__(self):
+        super().__init__()
+
+        pass
+
+    def update(self):
+        """load walls from image{random number}."""
+        pass
 
 
 class Star(pygame.sprite.Sprite):
