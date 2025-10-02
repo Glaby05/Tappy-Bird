@@ -2,10 +2,6 @@ import pygame
 from pygame.time import get_ticks
 from pygame.mask import from_surface
 
-screen_info = pygame.display.Info()
-SCREEN_WIDTH = screen_info.current_w
-SCREEN_HEIGHT = screen_info.current_h
-
 class Game:
     """ This class represents the Game. It contains all the game objects. """
     def __init__(self):
@@ -26,6 +22,9 @@ class Game:
 
 def main():
     pygame.init()
+    screen_info = pygame.display.Info()
+    SCREEN_WIDTH = screen_info.current_w
+    SCREEN_HEIGHT = screen_info.current_h
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
 

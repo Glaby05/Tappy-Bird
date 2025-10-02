@@ -4,6 +4,17 @@ from pygame.mask import from_surface
 
 # appropriate scaling behaviour (e.g. another level, a boss enemy)
 # life decreases faster and player moves faster overtime
+
+def load_player_sheet(sheet, x, y, w, h):
+    """Extract a sprite from the sheet at (x, y) with size (w, h)."""
+    sprite = pygame.Surface((w, h), pygame.SRCALPHA)
+    sprite.blit(sheet, (0, 0), (x, y, w, h))
+    return sprite
+
+sheet = pygame.image.load("assets/Flap.png").convert_alpha()
+fall_img = load_player_sheet(sheet, 0, 0, 64, 64)
+jump_img = load_player_sheet(sheet, 64, 0, 64, 64)
+
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, image, startx, starty):
         super().__init__()
@@ -23,16 +34,12 @@ class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
     def __init__(self, startx, starty, index=0):
-        super().__init__("assets/Flap.png", startx, starty)
+        super().__init__(fall_img, startx, starty)
 
-        tile_width = 64
-        tile_height = 64
-
-        x = tile_width * index
-        rect = pygame.Rect(x, 0, tile_width, tile_height)
-
-        self.image = self.image.subsurface(rect).copy()
-        self.rect = self.image.get_rect(topleft=(startx, starty))
+    def update(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_SPACE]:
+            self.image = jump_img
 
 
 class Wall(pygame.sprite.Sprite):
