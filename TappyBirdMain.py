@@ -1,4 +1,4 @@
-import pygame, Objects
+import pygame, Objects, random
 from pygame.sprite import Sprite
 from pygame.time import get_ticks
 from pygame.mask import from_surface
@@ -12,28 +12,18 @@ FPS = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tappy Bird")
 
+COOLDOWN = 3000
+LAST_ACTION = 0
+
 BG_IMAGE = pygame.image.load("assets/background.png").convert()
 BG_IMAGE = pygame.transform.scale(BG_IMAGE, (SCREEN_WIDTH, SCREEN_HEIGHT))
+ICE_BLOCK = pygame.image.load("assets/iceblock.png").convert_alpha()
+
+# Set the font for the start and game over screens
+font = pygame.font.Font(None, 32)
+big_font = pygame.font.Font(None, 48)
 
 clock = pygame.time.Clock()
-
-class Game:
-    """ This class represents the Game. It contains all the game objects. """
-    def __init__(self):
-        pass
-
-    def poll(self):
-        """mouse/keyboard event handler."""
-        pass
-
-    def update(self):
-        pass
-
-    def draw(self):
-        pass
-
-    def run(self):
-        pass
 
 class Level:
     """Holds and updates/draws all platform sprites."""
@@ -55,28 +45,30 @@ class Level:
         for spr in self.obstacle_list:
             surf.blit(spr.image, (spr.rect.x - camera_x, spr.rect.y))
 
-class LevelLab4(Level):
-    """
-    Ground row + three island rows + a moving platform.
-    Supports chunk-based extension to the right.
-    """
-    def __init__(self):
-        super().__init__()
-        self.row_gap = 150
-        self.right_edge = 0
-        self.build_initial()
+def spawn_pair():
+    top_pos = (SCREEN_WIDTH, -40)
+    bottom_pos = (SCREEN_WIDTH, SCREEN_HEIGHT - ICE_BLOCK.get_height() + 60)
 
-    def build_initial(self):
-        """Build the first screen of tiles."""
-        self.build_chunk(0, SCREEN_WIDTH)
-        self.right_edge = SCREEN_WIDTH
+    top_obstacle = Objects.Obstacle(top_pos)
+    bottom_obstacle = Objects.Obstacle(bottom_pos)
+    return top_obstacle, bottom_obstacle
 
-    def build_chunk(self, start_x, end_x):
-        """Build terrain in [start_x, end_x)."""
-        pass
+def spawn_one():
+    placement = ["top", "bottom"]
+    choice = random.choice(placement)
+
+    if choice == "top":
+        top_pos = (SCREEN_WIDTH, 0)
+        top_obstacle = Objects.Obstacle(top_pos)
+        return top_obstacle
+    else:
+        bottom_pos = (SCREEN_WIDTH, SCREEN_HEIGHT - ICE_BLOCK.get_height())
+        bottom_obstacle = Objects.Obstacle(bottom_pos)
+        return bottom_obstacle
 
 def main():
-    level = LevelLab4()
+    global LAST_ACTION
+    level = Level()
 
     # Stamina bars
     full_stamina = pygame.image.load("assets/stamina_9-10.png")
@@ -85,19 +77,18 @@ def main():
     tf_stamina = pygame.image.load("assets/stamina_3-4.png")
     ot_stamina = pygame.image.load("assets/stamina_1-2.png")
 
-    # Set the font for the start and game over screens
-    font = pygame.font.Font(None, 32)
-    big_font = pygame.font.Font(None, 48)
+    player = Objects.Player((SCREEN_WIDTH/3,SCREEN_HEIGHT/2))
 
-    player = Objects.Player(level, (SCREEN_WIDTH/3,SCREEN_HEIGHT/2))
     start = False
+    game_over = False
+    placement = ["pair", "single"]
 
     camera_x = 0.0
     SCROLL_TRIGGER = SCREEN_WIDTH * 0.6  # start scrolling when player passes 60% of screen
-    CHUNK_SIZE = 600                     # how much new terrain to add per extension
 
     all_sprites = pygame.sprite.Group()
-    all_sprites.add(player)
+    player_group = pygame.sprite.Group()
+    player_group.add(player)
 
     running = True
     while running:
@@ -110,45 +101,62 @@ def main():
                 if event.key == pygame.K_SPACE:
                     start = True
                     player.stamina -= 1
+                if event.key == pygame.K_r and game_over == True:
+                    main()
+
+        current_time = pygame.time.get_ticks()
+        if current_time - LAST_ACTION > COOLDOWN:
+            choice = random.choice(placement)
+            if choice == "pair":
+                top, bottom = spawn_pair()
+                all_sprites.add(top, bottom)
+            else:
+                block = spawn_one()
+                all_sprites.add(block)
+            LAST_ACTION = current_time
+
+        if player.rect.top <= 0:
+            player.rect.top = 0
+        elif player.rect.bottom >= SCREEN_HEIGHT:
+            player.rect.bottom = SCREEN_HEIGHT
 
         # --- Camera follow (only when player passes the trigger position) ---
         if player.rect.centerx > camera_x + SCROLL_TRIGGER:
             camera_x = player.rect.centerx - SCROLL_TRIGGER
 
-        # --- Extend level to the right on demand ---
-        while level.right_edge < camera_x + SCREEN_WIDTH + 200:
-            level.build_chunk(level.right_edge, level.right_edge + CHUNK_SIZE)
-            level.right_edge += CHUNK_SIZE
+        if not game_over:
+            level.draw(screen, camera_x)
+            all_sprites.draw(screen)
+            screen.blit(player.image, (player.rect.x - camera_x, player.rect.y))
 
         if start == False:
             go = big_font.render("Start Game  —  Press SPACE to Start", True, (255, 80, 80))
             screen.blit(go, (SCREEN_WIDTH // 2 - go.get_width() // 2, SCREEN_HEIGHT // 2 - go.get_height() // 2))
         else:
             all_sprites.update()
+            player_group.update()
 
-        level.draw(screen, camera_x)
-        screen.blit(player.image, (player.rect.x - camera_x, player.rect.y))
-
-        if 9 <= player.stamina <= 10:
+        if 17 <= player.stamina <= 20:
             screen.blit(full_stamina, (50,50))
-        elif 7 <= player.stamina <= 8:
+        elif 13 <= player.stamina <= 16:
             screen.blit(se_stamina, (50,50))
-        elif 5 <= player.stamina <= 6:
+        elif 9 <= player.stamina <= 12:
             screen.blit(fs_stamina, (50,50))
-        elif 3 <= player.stamina <= 4:
+        elif 5 <= player.stamina <= 8:
             screen.blit(tf_stamina, (50,50))
-        elif 1 <= player.stamina <= 2:
+        elif 1 <= player.stamina <= 4:
             screen.blit(ot_stamina, (50,50))
+        elif player.stamina <= 0:
+            game_over = True
+
+        if game_over:
+            end = big_font.render("GAME OVER  —  Press R to Restart", True, (255, 80, 80))
+            screen.blit(end, (SCREEN_WIDTH // 2 - end.get_width() // 2, SCREEN_HEIGHT // 2 - end.get_height() // 2))
 
         pygame.display.flip()
 
     pygame.quit()
 
 if __name__ == '__main__':
-    # g = Game()
-    # print("starting...")
-    # g.run()
-    # print("shutting down...")
-    # pygame.quit()
     main()
 

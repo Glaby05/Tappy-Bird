@@ -1,4 +1,4 @@
-import pygame, TappyBirdMain
+import pygame, TappyBirdMain, random
 from pygame.time import get_ticks
 from pygame.mask import from_surface
 
@@ -26,9 +26,8 @@ class Sprite(pygame.sprite.Sprite):
 class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
-    def __init__(self, level: TappyBirdMain.Level, pos):
+    def __init__(self, pos):
         super().__init__(pos, "assets/fall.png")
-        self.level = level
 
         # Player frames
         self.fall = pygame.image.load("assets/fall.png").convert_alpha()
@@ -41,7 +40,7 @@ class Player(Sprite):
 
         # Player attributes
         self.state = "idle"
-        self.stamina = 10
+        self.stamina = 20
 
     # Physics and input
     def update(self):
@@ -56,18 +55,20 @@ class Player(Sprite):
             self.state = "idle"
             self.image = self.fall
 
-
-class Wall(pygame.sprite.Sprite):
-    """objects that (dis-)appear in reaction to player activities.
-    (if shot when player powered up)"""
-    def __init__(self):
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, pos):
         super().__init__()
+        self.image = TappyBirdMain.ICE_BLOCK
+        self.rect = self.image.get_rect(topleft=pos)
 
-        pass
+        self.speed = 5
 
     def update(self):
         """load walls from image{random number}."""
-        pass
+        self.rect.x -= self.speed
+
+        if self.rect.right < 0:
+            self.kill()
 
 
 class Star(pygame.sprite.Sprite):
