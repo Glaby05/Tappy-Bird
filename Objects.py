@@ -1,4 +1,4 @@
-import pygame
+import pygame, TappyBirdMain
 from pygame.time import get_ticks
 from pygame.mask import from_surface
 
@@ -26,8 +26,9 @@ class Sprite(pygame.sprite.Sprite):
 class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
-    def __init__(self, pos):
+    def __init__(self, level: TappyBirdMain.Level, pos):
         super().__init__(pos, "assets/fall.png")
+        self.level = level
 
         # Player frames
         self.fall = pygame.image.load("assets/fall.png").convert_alpha()
@@ -36,7 +37,6 @@ class Player(Sprite):
 
         # Motion parameters
         # self.speed = 5
-        self.jumpspeed = 10 # The speed of which the bird "jumps" when SPACE is pressed
         self.gravity = 1 # The speed of which the bird falls
 
         # Player attributes
@@ -45,13 +45,13 @@ class Player(Sprite):
 
     # Physics and input
     def update(self):
-        self.rect.x += 0.6
-        self.rect.y += 0.5
+        self.rect.x += 5
+        self.rect.y += 8
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE]:
             self.state = "jump"
             self.image = self.jump
-            self.rect.y -= 2
+            self.rect.y -= 16
         else:
             self.state = "idle"
             self.image = self.fall
