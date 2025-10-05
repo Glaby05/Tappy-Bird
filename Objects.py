@@ -29,23 +29,32 @@ class Player(Sprite):
     def __init__(self, pos):
         super().__init__(pos, "assets/fall.png")
 
-        #Animation frames
+        # Player frames
         self.fall = pygame.image.load("assets/fall.png").convert_alpha()
         self.jump = pygame.image.load("assets/jump.png").convert_alpha()
-
         self.rect = self.image.get_rect(topleft=pos)
 
-        self.state = "idle"
+        # Motion parameters
+        # self.speed = 5
+        self.jumpspeed = 10 # The speed of which the bird "jumps" when SPACE is pressed
+        self.gravity = 1 # The speed of which the bird falls
 
+        # Player attributes
+        self.state = "idle"
+        self.stamina = 10
+
+    # Physics and input
     def update(self):
+        self.rect.x += 0.6
+        self.rect.y += 0.5
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE]:
             self.state = "jump"
             self.image = self.jump
+            self.rect.y -= 2
         else:
             self.state = "idle"
             self.image = self.fall
-
 
 
 class Wall(pygame.sprite.Sprite):
