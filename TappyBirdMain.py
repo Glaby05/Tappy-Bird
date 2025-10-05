@@ -86,7 +86,7 @@ def main():
     camera_x = 0.0
     SCROLL_TRIGGER = SCREEN_WIDTH * 0.6  # start scrolling when player passes 60% of screen
 
-    all_sprites = pygame.sprite.Group()
+    obstacles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
@@ -109,10 +109,10 @@ def main():
             choice = random.choice(placement)
             if choice == "pair":
                 top, bottom = spawn_pair()
-                all_sprites.add(top, bottom)
+                obstacles_group.add(top, bottom)
             else:
                 block = spawn_one()
-                all_sprites.add(block)
+                obstacles_group.add(block)
             LAST_ACTION = current_time
 
         if player.rect.top <= 0:
@@ -120,20 +120,25 @@ def main():
         elif player.rect.bottom >= SCREEN_HEIGHT:
             player.rect.bottom = SCREEN_HEIGHT
 
+        # Collision detection
+        for block in obstacles_group:
+            if player.rect.colliderect(block):
+                game_over = True
+
         # --- Camera follow (only when player passes the trigger position) ---
         if player.rect.centerx > camera_x + SCROLL_TRIGGER:
             camera_x = player.rect.centerx - SCROLL_TRIGGER
 
         if not game_over:
             level.draw(screen, camera_x)
-            all_sprites.draw(screen)
+            obstacles_group.draw(screen)
             screen.blit(player.image, (player.rect.x - camera_x, player.rect.y))
 
         if start == False:
             go = big_font.render("Start Game  —  Press SPACE to Start", True, (255, 80, 80))
             screen.blit(go, (SCREEN_WIDTH // 2 - go.get_width() // 2, SCREEN_HEIGHT // 2 - go.get_height() // 2))
         else:
-            all_sprites.update()
+            obstacles_group.update()
             player_group.update()
 
         if 17 <= player.stamina <= 20:
@@ -159,4 +164,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
