@@ -12,7 +12,7 @@ FPS = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tappy Bird")
 
-COOLDOWN = 3000
+COOLDOWN = random(1000, 3000)
 LAST_ACTION = 0
 
 BG_IMAGE = pygame.image.load("assets/background.png").convert()
