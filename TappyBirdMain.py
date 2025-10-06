@@ -103,12 +103,28 @@ def main():
     level = Level()
     last_spawn = 0
 
+    scale_factor = get_scale_factor()
+
     # Stamina bars
-    full_stamina = pygame.image.load("assets/stamina_9-10.png")
-    se_stamina = pygame.image.load("assets/stamina_7-8.png")
-    fs_stamina = pygame.image.load("assets/stamina_5-6.png")
-    tf_stamina = pygame.image.load("assets/stamina_3-4.png")
-    ot_stamina = pygame.image.load("assets/stamina_1-2.png")
+    full_stamina = pygame.image.load("assets/stamina_9-10.png").convert_alpha()
+    fs_w, fs_h = int(full_stamina.get_width() * scale_factor * 1.2), int(full_stamina.get_height() * scale_factor * 1.2)
+    scaled_fs = pygame.transform.scale(full_stamina, (fs_w, fs_h))
+
+    se_stamina = pygame.image.load("assets/stamina_7-8.png").convert_alpha()
+    se_w, se_h = int(se_stamina.get_width() * scale_factor * 1.2), int(se_stamina.get_height() * scale_factor * 1.2)
+    scaled_se = pygame.transform.scale(se_stamina, (se_w, se_h))
+
+    fs_stamina = pygame.image.load("assets/stamina_5-6.png").convert_alpha()
+    fss_w, fss_h = int(fs_stamina.get_width() * scale_factor * 1.2), int(fs_stamina.get_height() * scale_factor * 1.2)
+    scaled_fss = pygame.transform.scale(fs_stamina, (fss_w, fss_h))
+    
+    tf_stamina = pygame.image.load("assets/stamina_3-4.png").convert_alpha()
+    tf_w, tf_h = int(tf_stamina.get_width() * scale_factor * 1.2), int(tf_stamina.get_height() * scale_factor * 1.2)
+    scaled_tf = pygame.transform.scale(tf_stamina, (tf_w, tf_h))
+    
+    ot_stamina = pygame.image.load("assets/stamina_1-2.png").convert_alpha()
+    ot_w, ot_h = int(ot_stamina.get_width() * scale_factor * 1.2), int(ot_stamina.get_height() * scale_factor * 1.2)
+    scaled_ot = pygame.transform.scale(ot_stamina, (ot_w, ot_h))
 
     player = Objects.Player((SCREEN_WIDTH/3,SCREEN_HEIGHT/2))
 
@@ -194,15 +210,15 @@ def main():
             player_group.update()
 
         if 17 <= player.stamina <= 20:
-            screen.blit(full_stamina, (50,50))
+            screen.blit(scaled_fs, (50,50))
         elif 13 <= player.stamina <= 16:
-            screen.blit(se_stamina, (50,50))
+            screen.blit(scaled_se, (50,50))
         elif 9 <= player.stamina <= 12:
-            screen.blit(fs_stamina, (50,50))
+            screen.blit(scaled_fss, (50,50))
         elif 5 <= player.stamina <= 8:
-            screen.blit(tf_stamina, (50,50))
+            screen.blit(scaled_tf, (50,50))
         elif 1 <= player.stamina <= 4:
-            screen.blit(ot_stamina, (50,50))
+            screen.blit(scaled_ot, (50,50))
         elif player.stamina <= 0:
             game_over = True
 

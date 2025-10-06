@@ -30,8 +30,15 @@ class Player(Sprite):
         super().__init__(pos, "assets/fall.png")
 
         # Player frames
-        self.fall = pygame.image.load("assets/fall.png").convert_alpha()
-        self.jump = pygame.image.load("assets/jump.png").convert_alpha()
+        # self.fall = pygame.image.load("assets/fall.png").convert_alpha()
+        # self.jump = pygame.image.load("assets/jump.png").convert_alpha()
+
+        fall = pygame.image.load("assets/fall.png").convert_alpha()
+        jump = pygame.image.load("assets/jump.png").convert_alpha()
+        scale_factor = TappyBirdMain.get_scale_factor()
+        self.fall = (int(fall.get_width() * scale_factor * 1.2), int(fall.get_height() * scale_factor))
+        self.jump = (int(jump.get_width() * scale_factor * 1.2), int(jump.get_height() * scale_factor))
+
         self.rect = self.image.get_rect(topleft=pos)
 
         # Motion parameters
@@ -56,11 +63,13 @@ class Player(Sprite):
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE] and self.stamina > 0:
             self.state = "jump"
-            self.image = self.jump
+            # self.image = self.jump
+            self.image = pygame.transform.scale(self.image, (self.jump[0], self.jump[1]))
             self.rect.y -= 16  # Jump force
         else:
             self.state = "idle"
-            self.image = self.fall
+            # self.image = self.fall
+            self.image = pygame.transform.scale(self.image, (self.fall[0], self.fall[1]))
 
         self.mask = from_surface(self.image)
 
