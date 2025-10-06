@@ -42,26 +42,48 @@ class Player(Sprite):
         self.state = "idle"
         self.stamina = 20
 
+        self.mask = from_surface(self.image)
+
     # Physics and input
     def update(self):
+        # Horizontal movement (constant forward movement)
         self.rect.x += 5
-        self.rect.y += 8
+        
+        # Apply gravity
+        self.rect.y += self.gravity
+        
+        # Handle jumping (stamina consumption moved to main loop for tap-based input)
         key = pygame.key.get_pressed()
-        if key[pygame.K_SPACE]:
+        if key[pygame.K_SPACE] and self.stamina > 0:
             self.state = "jump"
             self.image = self.jump
-            self.rect.y -= 16
+            self.rect.y -= 16  # Jump force
         else:
             self.state = "idle"
             self.image = self.fall
+
+        self.mask = from_surface(self.image)
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.image = TappyBirdMain.ICE_BLOCK
+        
+        # Use consistent scaling factor from main module
+        scale_factor = TappyBirdMain.get_scale_factor()
+        
+        # Apply scaling
+        scaled_width = int(self.image.get_width() * scale_factor)
+        scaled_height = int(self.image.get_height() * scale_factor)
+        self.image = pygame.transform.scale(self.image, (scaled_width, scaled_height))
+        
+        # Store the scale factor for collision detection
+        self.scale_factor = scale_factor
+        
         self.rect = self.image.get_rect(topleft=pos)
-
         self.speed = 5
+
+        self.mask = from_surface(self.image)
 
     def update(self):
         """load walls from image{random number}."""
@@ -74,7 +96,20 @@ class Obstacle(pygame.sprite.Sprite):
 class Star(pygame.sprite.Sprite):
     """objects that (dis-)appear in reaction to player activities.
     (when collided with player)"""
-    pass
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("assets/star.png").convert_alpha()
+        self.rect = self.image.get_rect()
+
+        #TODO: add random position when initializing the star
+        # self.rect.center = (random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)) 
+
+    def update(self):
+        """
+        At star_group (the sprite group for stars) -> remove the star when it collides with the player 
+        && also when the star reaches the left edge of the screen.
+        """
+        pass
 
 
 class Life(pygame.sprite.Sprite):
@@ -89,10 +124,10 @@ class Life(pygame.sprite.Sprite):
         # self.rect.left = SET THE LOCATION ACCORDING TO THE WINDOW
 
     def update(self):
-        """Decrease life by n every second. (by doing self.rect.x - n) """
+        """Decrease life by n every second. (by doing self.rect.x - n) 
+        ^^^rendering the life bar image every stage of life span
+        """
         pass
 
 
-class PowerUp(pygame.sprite.Sprite):
-    pass
 
