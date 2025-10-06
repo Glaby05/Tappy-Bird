@@ -2,6 +2,7 @@ import pygame, Objects, random
 from pygame.sprite import Sprite
 from pygame.time import get_ticks
 from pygame.mask import from_surface
+import random
 
 pygame.init()
 
@@ -12,7 +13,7 @@ FPS = 60
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tappy Bird")
 
-COOLDOWN = random(1000, 3000)
+COOLDOWN = random.randint(1000, 3000)
 LAST_ACTION = 0
 
 BG_IMAGE = pygame.image.load("assets/background.png").convert()
