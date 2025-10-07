@@ -208,7 +208,7 @@ def main():
             safe = False
             for _ in range(max_attempts):
                 # start slightly off-screen to the right
-                star.rect.x = SCREEN_WIDTH + random.randint(100, 500)
+                star.rect.x = player.rect.x + SCREEN_WIDTH + random.randint(100, 500)
                 star.rect.y = random.randint(100, max(150, SCREEN_HEIGHT - 150))
 
                 # check overlap with obstacles
