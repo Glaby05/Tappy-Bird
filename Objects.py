@@ -23,11 +23,11 @@ class Sprite(pygame.sprite.Sprite):
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
-
 class Player(Sprite):
     """objects that move over time.
     objects who move or are transformed in reaction to user activities."""
     def __init__(self, pos):
+        # Our player sprite (penguin) is from https://duckhive.itch.io/penguin
         super().__init__(pos, "assets/fall.png")
         fall = pygame.image.load("assets/fall.png").convert_alpha()
         jump = pygame.image.load("assets/jump.png").convert_alpha()
