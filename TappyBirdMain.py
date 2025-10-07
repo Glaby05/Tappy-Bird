@@ -148,13 +148,14 @@ def main():
     start = False
     game_over = False
     score = 0
+    score_level = 0
+    curr_level = 1
     placement = ["pair", "single"]
 
     camera_x = 0.0
     SCROLL_TRIGGER = SCREEN_WIDTH * 0.6  # start scrolling when player passes 60% of screen
-    # TODO: make the SCROLL_TRIGGER a variable that will be increased according to the level, 
     
-    obstacles_group = pygame.sprite.Group() # TODO: issue -> why do we have obst_group and level.octs_list??
+    obstacles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     player_group.add(player)
     stars_group = pygame.sprite.Group()
@@ -179,16 +180,14 @@ def main():
                         player.jump_count += 1
                         score += 1
                         # increase speed (difficulty) 
-                        if player.jump_count % 10 == 0:  
+                        if player.jump_count % 20 == 0:
                             player.speed += 1
+                            curr_level += 1
+                            score_level = score
                             for obs in obstacles_group:
                                 obs.speed += 1
                             for star in stars_group:
                                 star.speed += 1
-                            level_text = big_font.render(f"Level up! Getting faster", True, (0, 0, 0))
-                            text_spawn = current_time
-                            # if current_time - text_spawn < 3000:
-                            screen.blit(level_text, (SCREEN_WIDTH - 300, SCREEN_HEIGHT // 3))
                 if event.key == pygame.K_r and game_over == True:
                     return main()
             if event.type == pygame.KEYUP:      
@@ -210,7 +209,7 @@ def main():
 
         # if current_time - last_star_spawn > 500:
             # star
-        if random.randint(0, 50) == 1:  # 1 in 200 chance per frame (once every few seconds)
+        if random.randint(0, 30) == 1:
             star = Objects.Star()
             spawn_x = SCREEN_WIDTH + 50  # just off right side
             max_attempts = 50
@@ -300,6 +299,13 @@ def main():
 
         score_text = big_font.render(f"Score: {score}", True, (0, 0, 0))
         screen.blit(score_text, (SCREEN_WIDTH - 200, 50))
+
+        level_text = big_font.render(f"Level: {curr_level}", True, (0, 0, 0))
+        screen.blit(level_text, (SCREEN_WIDTH - 200, 100))
+
+        if curr_level > 1 and score - score_level < 6:
+            speed_text = big_font.render("Level up! Getting faster", True, (0, 0, 0))
+            screen.blit(speed_text, (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 
         if game_over:
             # Show game over message
