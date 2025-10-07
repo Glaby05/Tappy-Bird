@@ -71,7 +71,7 @@ def spawn_pair(camera_x):
     
     # Create gap in the middle for player to pass through
     # Scale gap size based on screen size
-    gap_size = int(200 * scale_factor)
+    gap_size = int(300 * scale_factor)
     gap_center = SCREEN_HEIGHT // 2
     
     top_pos = (spawn_x, gap_center - gap_size // 2 - scaled_ice_height)
@@ -103,18 +103,6 @@ def spawn_one(camera_x):
         bottom_pos = (spawn_x, SCREEN_HEIGHT - scaled_ice_height)
         bottom_obstacle = Objects.Obstacle(bottom_pos)
         return bottom_obstacle
-
-# def spawn_star(camera_x):
-#     scale_factor = get_scale_factor()
-# 
-#     star_width = int(STAR.get_height() * scale_factor)
-#     star_height = int(STAR.get_width() * scale_factor)
-# 
-#     spawn_x = camera_x + SCREEN_WIDTH + (SCREEN_WIDTH*(2//3))
-#     gap_size = int(200 * scale_factor)
-#     gap_center = SCREEN_HEIGHT // 2
-# 
-#     pass
 
 def main():
     global LAST_ACTION
@@ -173,8 +161,22 @@ def main():
                     # Only reduce stamina on key press, not continuous hold
                     if player.stamina > 0:
                         player.stamina -= 1
+                        # player.rect -= 16
+                        player.vel_y = player.jump_force
+                        player.state = "jump"
+                        player.jump_count += 1
+                        # increase speed (difficulty) every 10 jumps
+                        if player.jump_count % 50 == 0:  
+                            player.speed += 1
+                            for obs in obstacles_group:
+                                obs.speed += 1
+                            for star in stars_group:
+                                star.speed += 1
                 if event.key == pygame.K_r and game_over == True:
                     return main()
+            if event.type == pygame.KEYUP:      
+                if event.key == pygame.K_SPACE:
+                    player.state = "idle"
 
         current_time = pygame.time.get_ticks()
         # if current_time - LAST_ACTION > COOLDOWN:
@@ -189,28 +191,28 @@ def main():
                 obstacles_group.add(block)
             last_spawn = current_time
 
-        if current_time - last_star_spawn > COOLDOWN:
+        # if current_time - last_star_spawn > 500:
             # star
-            if random.randint(0, 3) == 1:  # 1 in 200 chance per frame (once every few seconds)
-                star = Objects.Star()
-                spawn_x = SCREEN_WIDTH + random.randint(100, 400)  # just off right side
-                max_attempts = 20
-                safe = False
-                for _ in range(max_attempts):
-                    # start slightly off-screen to the right
-                    star.rect.x = SCREEN_WIDTH + random.randint(50, 200)
-                    star.rect.y = random.randint(100, max(150, SCREEN_HEIGHT - 150))
+        if random.randint(0, 50) == 1:  # 1 in 200 chance per frame (once every few seconds)
+            star = Objects.Star()
+            spawn_x = SCREEN_WIDTH + 50  # just off right side
+            max_attempts = 50
+            safe = False
+            for _ in range(max_attempts):
+                # start slightly off-screen to the right
+                star.rect.x = SCREEN_WIDTH + random.randint(50, 200)
+                star.rect.y = random.randint(100, max(150, SCREEN_HEIGHT - 150))
 
-                    # check overlap with obstacles
-                    if not any(star.rect.colliderect(ob.rect.inflate(60, 60)) for ob in obstacles_group):
-                        safe = True
-                        break
-                if not safe:
-                    star.rect.x = spawn_x + 300
-                    star.rect.y = random.randint(150, SCREEN_HEIGHT // 2)
-                stars_group.add(star)
-                print(f"stars")
-            last_star_spawn = current_time
+                # check overlap with obstacles
+                if not any(star.rect.colliderect(ob.rect.inflate(60, 60)) for ob in obstacles_group):
+                    safe = True
+                    break
+            if not safe:
+                star.rect.x = spawn_x + 100
+                star.rect.y = random.randint(100, SCREEN_HEIGHT // 2)
+            stars_group.add(star)
+            print(f"star")
+        last_star_spawn = current_time
 
             # LAST_ACTION = current_time
 
@@ -234,7 +236,7 @@ def main():
                 offset_y = star.rect.top - player.rect.top
                 if player.mask.overlap(star.mask, (offset_x, offset_y)):
                     # Restore some stamina
-                    player.stamina = min(player.stamina + 2, 20)
+                    player.stamina = min(player.stamina + 5, 20)
                     star.kill()
 
 

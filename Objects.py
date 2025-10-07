@@ -29,11 +29,6 @@ class Player(Sprite):
     objects who move or are transformed in reaction to user activities."""
     def __init__(self, pos):
         super().__init__(pos, "assets/fall.png")
-
-        # Player frames
-        # self.fall = pygame.image.load("assets/fall.png").convert_alpha()
-        # self.jump = pygame.image.load("assets/jump.png").convert_alpha()
-
         fall = pygame.image.load("assets/fall.png").convert_alpha()
         jump = pygame.image.load("assets/jump.png").convert_alpha()
         scale_factor = TappyBirdMain.get_scale_factor()
@@ -43,8 +38,11 @@ class Player(Sprite):
         self.rect = self.image.get_rect(topleft=pos)
 
         # Motion parameters
-        # self.speed = 5
-        self.gravity = 2 # The speed of which the bird falls
+        self.speed = 3
+        self.gravity = 1 # The speed of which the bird falls
+        self.vel_y = 0
+        self.jump_force = -16
+        self.jump_count = 0
 
         # Player attributes
         self.state = "idle"
@@ -55,23 +53,26 @@ class Player(Sprite):
     # Physics and input
     def update(self):
         # Horizontal movement (constant forward movement)
-        self.rect.x += 3
+        self.rect.x += self.speed
         
         # Apply gravity
-        self.rect.y += self.gravity
-        
-        # Handle jumping (stamina consumption moved to main loop for tap-based input)
-        key = pygame.key.get_pressed()
-        if key[pygame.K_SPACE] and self.stamina > 0:
-            self.state = "jump"
-            # self.image = self.jump
-            self.image = pygame.transform.scale(self.image, (self.jump[0], self.jump[1]))
-            self.rect.y -= 16  # Jump force
-        else:
-            self.state = "idle"
-            # self.image = self.fall
-            self.image = pygame.transform.scale(self.image, (self.fall[0], self.fall[1]))
+        # self.rect.y += self.gravity
+        self.vel_y += self.gravity
+        self.rect.y += self.vel_y
 
+        # Apply gravity (increase fall speed slightly)
+        if self.rect.y < TappyBirdMain.SCREEN_HEIGHT:
+            self.rect.y += self.gravity
+
+        if self.rect.bottom >= TappyBirdMain.SCREEN_HEIGHT:
+            self.rect.bottom = TappyBirdMain.SCREEN_HEIGHT
+            self.vel_y = 0
+
+        # Update image based on state
+        if self.state == "jump":
+            self.image = pygame.transform.scale(self.image, (self.jump[0], self.jump[1]))
+        else:
+            self.image = pygame.transform.scale(self.image, (self.fall[0], self.fall[1]))
         self.mask = from_surface(self.image)
 
 class Obstacle(pygame.sprite.Sprite):
@@ -110,16 +111,13 @@ class Star(pygame.sprite.Sprite):
         super().__init__()
         star = pygame.image.load("assets/star.png").convert_alpha()
         scale_factor = TappyBirdMain.get_scale_factor()
-        star_width = int(star.get_width() * scale_factor * 0.4)
-        star_height = int(star.get_height() * scale_factor * 0.4)
+        star_width = int(star.get_width() * scale_factor * 0.2)
+        star_height = int(star.get_height() * scale_factor * 0.2)
 
         self.image = pygame.transform.scale(star, (star_width, star_height))
 
         self.rect = self.image.get_rect()
-        # Random position when initializing the star
-        # self.rect.x = TappyBirdMain.SCREEN_WIDTH + random.randint(50, 200)
-        # self.rect.y = random.randint(100, max(150, TappyBirdMain.SCREEN_HEIGHT - 150))
-
+        
         self.speed = 3
         self.mask = from_surface(self.image)
 
