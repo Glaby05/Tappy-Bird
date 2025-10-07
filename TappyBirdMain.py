@@ -87,11 +87,6 @@ def spawn_pair(camera_x):
     bottom_obstacle = Objects.Obstacle(bottom_pos)
     return top_obstacle, bottom_obstacle
 
-def level_up():
-    spawn = curr_time, if curr_time - spawn < 3000
-    level_text = big_font.render(f"Level up! Getting faster", True, (0, 0, 0))
-    screen.blit(level_text, (200, SCREEN_HEIGHT // 2))
-
 def spawn_one(camera_x):
     placement = ["top", "bottom"]
     choice = random.choice(placement)
@@ -179,9 +174,8 @@ def main():
                         player.jump_count += 1
                         score += 1
                         # increase speed (difficulty) every 50 jumps
-                        if player.jump_count % 50 == 0:  
+                        if player.jump_count % 30 == 0:  
                             player.speed += 1
-                            level += 1
                             for obs in obstacles_group:
                                 obs.speed += 1
                             for star in stars_group:
@@ -194,7 +188,7 @@ def main():
 
         current_time = pygame.time.get_ticks()
         # if current_time - LAST_ACTION > COOLDOWN:
-        if current_time - last_spawn > COOLDOWN:
+        if current_time - last_spawn > COOLDOWN: 
             # obstacle
             choice = random.choice(placement)
             if choice == "pair":
