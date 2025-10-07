@@ -87,10 +87,9 @@ def spawn_pair(camera_x):
     bottom_obstacle = Objects.Obstacle(bottom_pos)
     return top_obstacle, bottom_obstacle
 
-def level_up():
-    spawn = curr_time, if curr_time - spawn < 3000
-    level_text = big_font.render(f"Level up! Getting faster", True, (0, 0, 0))
-    screen.blit(level_text, (200, SCREEN_HEIGHT // 2))
+# def level_up():
+    # level_text = big_font.render(f"Level up! Getting faster", True, (0, 0, 0))
+    # screen.blit(level_text, (200, SCREEN_HEIGHT // 2))
 
 def spawn_one(camera_x):
     placement = ["top", "bottom"]
@@ -163,6 +162,7 @@ def main():
     running = True
     while running:
         clock.tick(FPS)
+        current_time = pygame.time.get_ticks()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -178,20 +178,24 @@ def main():
                         player.state = "jump"
                         player.jump_count += 1
                         score += 1
-                        # increase speed (difficulty) every 50 jumps
-                        if player.jump_count % 30 == 0:  
+                        # increase speed (difficulty) 
+                        if player.jump_count % 10 == 0:  
                             player.speed += 1
                             for obs in obstacles_group:
                                 obs.speed += 1
                             for star in stars_group:
                                 star.speed += 1
+                            level_text = big_font.render(f"Level up! Getting faster", True, (0, 0, 0))
+                            text_spawn = current_time
+                            # if current_time - text_spawn < 3000:
+                            screen.blit(level_text, (SCREEN_WIDTH - 300, SCREEN_HEIGHT // 3))
                 if event.key == pygame.K_r and game_over == True:
                     return main()
             if event.type == pygame.KEYUP:      
                 if event.key == pygame.K_SPACE:
                     player.state = "idle"
 
-        current_time = pygame.time.get_ticks()
+        # current_time = pygame.time.get_ticks()
         # if current_time - LAST_ACTION > COOLDOWN:
         if current_time - last_spawn > COOLDOWN: 
             # obstacle
