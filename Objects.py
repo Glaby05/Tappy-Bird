@@ -1,6 +1,7 @@
 import pygame, TappyBirdMain, random
 from pygame.time import get_ticks
 from pygame.mask import from_surface
+import math
 
 # appropriate scaling behaviour (e.g. another level, a boss enemy)
 # life decreases faster and player moves faster overtime
@@ -43,7 +44,7 @@ class Player(Sprite):
 
         # Motion parameters
         # self.speed = 5
-        self.gravity = 1 # The speed of which the bird falls
+        self.gravity = 2 # The speed of which the bird falls
 
         # Player attributes
         self.state = "idle"
@@ -54,7 +55,7 @@ class Player(Sprite):
     # Physics and input
     def update(self):
         # Horizontal movement (constant forward movement)
-        self.rect.x += 5
+        self.rect.x += 3
         
         # Apply gravity
         self.rect.y += self.gravity
@@ -90,7 +91,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.scale_factor = scale_factor
         
         self.rect = self.image.get_rect(topleft=pos)
-        self.speed = 5
+        self.speed = 3
 
         self.mask = from_surface(self.image)
 
@@ -107,36 +108,32 @@ class Star(pygame.sprite.Sprite):
     (when collided with player)"""
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("assets/star.png").convert_alpha()
-        self.rect = self.image.get_rect()
+        star = pygame.image.load("assets/star.png").convert_alpha()
+        scale_factor = TappyBirdMain.get_scale_factor()
+        star_width = int(star.get_width() * scale_factor * 0.4)
+        star_height = int(star.get_height() * scale_factor * 0.4)
 
-        #TODO: add random position when initializing the star
-        # self.rect.center = (random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)) 
+        self.image = pygame.transform.scale(star, (star_width, star_height))
+
+        self.rect = self.image.get_rect()
+        # Random position when initializing the star
+        # self.rect.x = TappyBirdMain.SCREEN_WIDTH + random.randint(50, 200)
+        # self.rect.y = random.randint(100, max(150, TappyBirdMain.SCREEN_HEIGHT - 150))
+
+        self.speed = 3
+        self.mask = from_surface(self.image)
+
 
     def update(self):
         """
         At star_group (the sprite group for stars) -> remove the star when it collides with the player 
         && also when the star reaches the left edge of the screen.
         """
-        pass
-
-
-class Life(pygame.sprite.Sprite):
-    """Objects who move or are transformed in reaction to user activities."""
-    def __init__(self):
-        super().__init__()
-
-        # self.image = pygame.Surface([20, 15])
-        self.image = pygame.Surface((100, 30))
-        self.image.fill((253, 234, 14))  # or set_colorkey()
-        self.rect = self.image.get_rect()
-        # self.rect.left = SET THE LOCATION ACCORDING TO THE WINDOW
-
-    def update(self):
-        """Decrease life by n every second. (by doing self.rect.x - n) 
-        ^^^rendering the life bar image every stage of life span
-        """
-        pass
+        self.rect.x -= self.speed
+        # gentle up-down motion
+        self.rect.y += int(2 * math.sin(pygame.time.get_ticks() / 200)) 
+        if self.rect.right < 0:
+            self.kill()
 
 
 

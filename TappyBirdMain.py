@@ -19,6 +19,7 @@ LAST_ACTION = 0
 BG_IMAGE = pygame.image.load("assets/background.png").convert()
 BG_IMAGE = pygame.transform.scale(BG_IMAGE, (SCREEN_WIDTH, SCREEN_HEIGHT))
 ICE_BLOCK = pygame.image.load("assets/iceblock.png").convert_alpha()
+STAR = pygame.image.load("assets/star.png").convert_alpha()
 
 # Set the font for the start and game over screens
 font = pygame.font.Font(None, 32)
@@ -36,9 +37,11 @@ class Level:
     """Holds and updates/draws all platform sprites."""
     def __init__(self):
         self.obstacle_list = pygame.sprite.Group()
+        self.star_list = pygame.sprite.Group()
 
     def update(self):
         self.obstacle_list.update()
+        self.star_list.update()
 
     def draw(self, surf, camera_x=0):
         # Clear background and draw all platforms with camera offset.
@@ -50,6 +53,9 @@ class Level:
             surf.blit(BG_IMAGE, (start_x + i * bg_width, 0))
 
         for spr in self.obstacle_list:
+            surf.blit(spr.image, (spr.rect.x - camera_x, spr.rect.y))
+
+        for spr in self.star_list:
             surf.blit(spr.image, (spr.rect.x - camera_x, spr.rect.y))
 
 def spawn_pair(camera_x):
@@ -98,10 +104,23 @@ def spawn_one(camera_x):
         bottom_obstacle = Objects.Obstacle(bottom_pos)
         return bottom_obstacle
 
+# def spawn_star(camera_x):
+#     scale_factor = get_scale_factor()
+# 
+#     star_width = int(STAR.get_height() * scale_factor)
+#     star_height = int(STAR.get_width() * scale_factor)
+# 
+#     spawn_x = camera_x + SCREEN_WIDTH + (SCREEN_WIDTH*(2//3))
+#     gap_size = int(200 * scale_factor)
+#     gap_center = SCREEN_HEIGHT // 2
+# 
+#     pass
+
 def main():
     global LAST_ACTION
     level = Level()
     last_spawn = 0
+    last_star_spawn = 0
 
     scale_factor = get_scale_factor()
 
@@ -135,10 +154,11 @@ def main():
     camera_x = 0.0
     SCROLL_TRIGGER = SCREEN_WIDTH * 0.6  # start scrolling when player passes 60% of screen
     # TODO: make the SCROLL_TRIGGER a variable that will be increased according to the level, 
-
+    
     obstacles_group = pygame.sprite.Group() # TODO: issue -> why do we have obst_group and level.octs_list??
     player_group = pygame.sprite.Group()
     player_group.add(player)
+    stars_group = pygame.sprite.Group()
 
     running = True
     while running:
@@ -159,6 +179,7 @@ def main():
         current_time = pygame.time.get_ticks()
         # if current_time - LAST_ACTION > COOLDOWN:
         if current_time - last_spawn > COOLDOWN:
+            # obstacle
             choice = random.choice(placement)
             if choice == "pair":
                 top, bottom = spawn_pair(camera_x)
@@ -166,8 +187,32 @@ def main():
             else:
                 block = spawn_one(camera_x)
                 obstacles_group.add(block)
-            # LAST_ACTION = current_time
             last_spawn = current_time
+
+        if current_time - last_star_spawn > COOLDOWN:
+            # star
+            if random.randint(0, 3) == 1:  # 1 in 200 chance per frame (once every few seconds)
+                star = Objects.Star()
+                spawn_x = SCREEN_WIDTH + random.randint(100, 400)  # just off right side
+                max_attempts = 20
+                safe = False
+                for _ in range(max_attempts):
+                    # start slightly off-screen to the right
+                    star.rect.x = SCREEN_WIDTH + random.randint(50, 200)
+                    star.rect.y = random.randint(100, max(150, SCREEN_HEIGHT - 150))
+
+                    # check overlap with obstacles
+                    if not any(star.rect.colliderect(ob.rect.inflate(60, 60)) for ob in obstacles_group):
+                        safe = True
+                        break
+                if not safe:
+                    star.rect.x = spawn_x + 300
+                    star.rect.y = random.randint(150, SCREEN_HEIGHT // 2)
+                stars_group.add(star)
+                print(f"stars")
+            last_star_spawn = current_time
+
+            # LAST_ACTION = current_time
 
         if player.rect.top <= 0:
             player.rect.top = 0
@@ -181,11 +226,17 @@ def main():
                 offset_y = block.rect.top - player.rect.top
                 if player.mask.overlap(block.mask, (offset_x, offset_y)):
                         game_over = True
-                        print(f"Collision detected!")
-                        print(f"Player position: {player.rect}")
-                        print(f"Obstacle position: {block.rect}")
-                        print(f"Player center: {player.rect.center}")
-                        print(f"Obstacle center: {block.rect.center}")
+
+        # Star collision
+        for star in stars_group:
+            if player.rect.colliderect(star.rect):
+                offset_x = star.rect.left - player.rect.left
+                offset_y = star.rect.top - player.rect.top
+                if player.mask.overlap(star.mask, (offset_x, offset_y)):
+                    # Restore some stamina
+                    player.stamina = min(player.stamina + 2, 20)
+                    star.kill()
+
 
         # --- Camera follow (only when player passes the trigger position) ---
         if player.rect.centerx > camera_x + SCROLL_TRIGGER:
@@ -197,6 +248,10 @@ def main():
             # obstacles_group.draw(screen)
             for block in obstacles_group:
                 screen.blit(block.image, (block.rect.x - camera_x, block.rect.y))
+            # draw stars
+            for star in stars_group:
+                screen.blit(star.image, (star.rect.x - camera_x, star.rect.y))
+            # draw player
             screen.blit(player.image, (player.rect.x - camera_x, player.rect.y))
 
         # Handle game states
@@ -208,6 +263,7 @@ def main():
             # Update game objects only if game is not over
             obstacles_group.update()
             player_group.update()
+            stars_group.update()
 
         if 17 <= player.stamina <= 20:
             screen.blit(scaled_fs, (50,50))
