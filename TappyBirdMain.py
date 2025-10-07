@@ -172,7 +172,8 @@ def main():
                         player.vel_y = player.jump_force
                         player.state = "jump"
                         player.jump_count += 1
-                        # increase speed (difficulty) every 10 jumps
+                        score += 1
+                        # increase speed (difficulty) every 50 jumps
                         if player.jump_count % 50 == 0:  
                             player.speed += 1
                             for obs in obstacles_group:
@@ -207,7 +208,7 @@ def main():
             safe = False
             for _ in range(max_attempts):
                 # start slightly off-screen to the right
-                star.rect.x = SCREEN_WIDTH + random.randint(50, 200)
+                star.rect.x = SCREEN_WIDTH + random.randint(100, 300)
                 star.rect.y = random.randint(100, max(150, SCREEN_HEIGHT - 150))
 
                 # check overlap with obstacles
@@ -239,7 +240,7 @@ def main():
         # Star collision
         for star in stars_group:
             if player.rect.colliderect(star.rect):
-                score += 1
+                # score += 1
                 offset_x = star.rect.left - player.rect.left
                 offset_y = star.rect.top - player.rect.top
                 if player.mask.overlap(star.mask, (offset_x, offset_y)):
